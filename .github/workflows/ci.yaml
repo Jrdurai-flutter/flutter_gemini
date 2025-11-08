@@ -1,0 +1,71 @@
+name: Flutter CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: \'\'\'temurin\'\'\'
+          java-version: \'\'\'17\'\'\'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: \'\'\'stable\'\'\'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze project
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+  deploy_to_app_distribution:
+    name: Deploy to Firebase App Distribution
+    needs: build_and_test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download APK artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: release-apk
+
+      - name: Authenticate with Google Cloud
+        uses: \'\'\'google-github-actions/auth@v2\'\'\'
+        with:
+          credentials_json: \'\'\'${{ secrets.FIREBASE_SERVICE_ACCOUNT }}\'\'\'
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy to Firebase App Distribution
+        run: |
+          firebase appdistribution:distribute app-release.apk \
+            --app "1:1088161484275:android:fd88df0647bc418d7dd686" \
+            --release-notes "Latest build from CI" \
+            --groups "testers"
