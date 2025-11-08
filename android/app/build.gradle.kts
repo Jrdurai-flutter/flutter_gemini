@@ -6,20 +6,17 @@ plugins {
 }
 
 android {
-    namespace = "KEYSTORE_BASE64	Base64 encoded version of your keystore file (optional if you sign release)
-KEYSTORE_PASSWORD	Your keystore password
-KEY_ALIAS	Key alias
-KEY_PASSWORD"
+    namespace = "com.example.myapp"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = "17"
     }
 
     defaultConfig {
