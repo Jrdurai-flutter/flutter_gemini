@@ -64,8 +64,8 @@ jobs:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
 
-  deploy:
-    name: Deploy to Firebase & Distribute
+  deploy_to_firebase:
+    name: Deploy to Firebase
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -82,9 +82,33 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
-      - name: Deploy and Distribute
+      - name: Deploy to Firebase App Distribution
         run: |
           firebase appdistribution:distribute app-release.apk \
             --app "1:1088161484275:android:fd88df0647bc418d7dd686" \
-            --release-notes "Latest build from CI" \
+            --release-notes "Staged release from CI"
+
+  distribute_to_testers:
+    name: Distribute to Testers
+    needs: deploy_to_firebase
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: release-apk
+
+      - name: Authenticate with Google Cloud
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Distribute to Tester Group
+        run: |
+          firebase appdistribution:distribute app-release.apk \
+            --app "1:1088161484275:android:fd88df0647bc418d7dd686" \
+            --release-notes "New build available for testing!" \
             --groups "local_tester_durai"
