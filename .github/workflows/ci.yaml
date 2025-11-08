@@ -65,4 +65,4 @@ jobs:
           firebase appdistribution:distribute app-release.apk \
             --app "1:1088161484275:android:fd88df0647bc418d7dd686" \
             --release-notes "Latest build from CI" \
-            --groups "testers"
+            --groups "local_tester_durai"
